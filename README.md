@@ -121,7 +121,7 @@ Replace <new_image_name>:<tag> with the name and tag you used in the previous st
 docker push username/repository:tag
 ```
 
-# Node app container using Dockerfile
+# Nginx container using Dockerfile
 
 ```docker
 # select the base image of nginx
@@ -143,6 +143,30 @@ EXPOSE 80
 # command to launch the web server 
 
 CMD ["nginx", "-g", "daemon off;"]
+
+```
+
+# Node app container using Dockerfile
+
+```docker
+# Step 1: Choose the base image with Node.js version 12
+FROM node:12
+
+# Step 2: Set the working directory inside the container
+WORKDIR /app
+
+# Step 3: Copy the application source code from localhost to the container
+COPY app /app
+
+# Step 4: Install dependencies
+RUN npm install
+
+# Step 5: Expose the port your Node.js app is listening on
+EXPOSE 3000
+
+# Step 6: Define the startup command for your app
+CMD ["npm", "start"]
+
 
 ```
 
