@@ -262,3 +262,78 @@ A Scheduler watches for new requests coming from the API Server and assigns them
 
 Worker nodes listen to the API Server for new work assignments; they execute the work assignments and then report the results back to the Kubernetes Master node.
 
+# Creating K8 deployment:
+
+* NGINX
+
+```yml
+apiVersion: apps/v1 # which API to use for deployment
+kind: Deployment # pod - service what kind of service you want to create
+# what would you like to call it - name the service/object
+metadata:
+  name: nginx-deployment # naming the deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx #look for this label to match with k8 service
+    # let's create a replica set of this with instances/pods
+  replicas: 3 # 3 pods
+    # template to use it's label for k8 service to launch in the browser
+  template:
+    metadata:
+      labels:
+        app: nginx # this label connects to the service or any other k8 components
+  # let's define the container spec
+    spec:
+      containers:
+      - name: nginx
+        image: majeranowski/tech241-nginx:v1 # use the image that you built
+        ports:
+        - containerPort: 80
+
+# create a kubernetes nginx-service.yml to create a k8 servicekube
+```
+* NODE
+
+```yml
+apiVersion: apps/v1 # which API to use for deployment
+kind: Deployment # pod - service what kind of service you want to create
+# what would you like to call it - name the service/object
+metadata:
+  name: node-deployment # naming the deployment
+spec:
+  selector:
+    matchLabels:
+      app: node #look for this label to match with k8 service
+    # let's create a replica set of this with instances/pods
+  replicas: 3 # 3 pods
+    # template to use it's label for k8 service to launch in the browser
+  template:
+    metadata:
+      labels:
+        app: node # this label connects to the service or any other k8 components
+  # let's define the container spec
+    spec:
+      containers:
+      - name: node
+        image: majeranowski/tech241-node-app:v1 # use the image that you built
+        ports:
+        - containerPort: 3000
+
+# create a kubernetes nginx-service.yml to create a k8 servicekube
+```
+
+`kubectl create -f nginx-k8.yml` - creating a k8 deployment from the yml file we created
+
+`kubectl get deployment` - check deployments running
+
+`kubectl get pods` - check pods running
+
+```bash
+$ kubectl get deployment
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   3/3     3            3           18s
+node-deployment    3/3     3            3           3m15s
+
+```
+

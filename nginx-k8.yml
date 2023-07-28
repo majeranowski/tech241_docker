@@ -1,0 +1,37 @@
+
+
+
+
+
+
+
+
+
+
+
+
+apiVersion: apps/v1 # which API to use for deployment
+kind: Deployment # pod - service what kind of service you want to create
+# what would you like to call it - name the service/object
+metadata:
+  name: nginx-deployment # naming the deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx #look for this label to match with k8 service
+    # let's create a replica set of this with instances/pods
+  replicas: 3 # 3 pods
+    # template to use it's label for k8 service to launch in the browser
+  template:
+    metadata:
+      labels:
+        app: nginx # this label connects to the service or any other k8 components
+  # let's define the container spec
+    spec:
+      containers:
+      - name: nginx
+        image: majeranowski/tech241-nginx:v1 # use the image that you built
+        ports:
+        - containerPort: 80
+
+# create a kubernetes nginx-service.yml to create a k8 servicekube
