@@ -175,3 +175,90 @@ After that:
 `docker build -t majeranowski/tech241-node-app:v1 .` - . means to build from the current directory
 
 `docker run -d -p 3000:3000 majeranowski/tech241-node-app:v1` - run the container on port 3000
+
+# Kubernetes (K8)
+
+Kubernetes, or k8s for short, is a system for automating application deployment. Modern applications are dispersed across clouds, virtual machines, and servers. Administering apps manually is no longer a viable option.
+
+K8s transforms virtual and physical machines into a unified API surface. A developer can then use the Kubernetes API to deploy, scale, and manage containerized applications.
+
+Its architecture also provides a flexible framework for distributed systems. K8s automatically orchestrates scaling and failovers for your applications and provides deployment patterns.
+
+Why should we learn and use Kubernetes?
+
+1. **Simplified Deployment:** Kubernetes streamlines the process of deploying applications, making it easier to move from development to production environments.
+
+2. **Scaling Made Easy:** It allows automatic scaling of applications based on demand, so your application can handle increased traffic without manual intervention.
+
+3. **High Availability:** Kubernetes ensures that your applications are always available, even if some parts fail. It can automatically restart or replace failed components.
+
+4. **Resource Efficiency:** The platform optimizes the use of server resources, helping you get more done with less infrastructure.
+
+5. **Declarative Configuration:** Kubernetes uses a declarative approach to manage applications, meaning you state what you want the application to look like, and Kubernetes takes care of the rest.
+
+6. **Ecosystem and Community:** Kubernetes has a vibrant and large community of users, making it easier to find support and resources.
+
+Who is using Kubernetes?
+
+Kubernetes is widely adopted across various industries and is used by both small startups and large enterprises. Tech giants like Google, Microsoft, and Amazon use Kubernetes for their cloud services. Many other companies in finance, healthcare, e-commerce, and more have embraced Kubernetes to modernize their application infrastructure.
+
+Benefits to businesses:
+
+1. **Scalability:** Kubernetes allows businesses to scale their applications efficiently as their user base grows.
+
+2. **Cost-Effectiveness:** By optimizing resource usage, Kubernetes can help businesses save on infrastructure costs.
+
+3. **Faster Deployment:** With automated deployment and updates, businesses can roll out new features faster.
+
+4. **High Availability:** Ensuring that applications are always available leads to improved user experience and customer satisfaction.
+
+Kubernetes Objects:
+
+1. **Pods:** Pods are the smallest and simplest Kubernetes objects. They represent a single instance of a running process in a cluster, typically containing one or more tightly coupled containers.
+
+2. **Deployments:** Deployments manage the desired state of Pods. They help ensure a specified number of replicas of Pods are running at all times and can facilitate rolling updates and rollbacks.
+
+3. **Services:** Services provide a stable endpoint for accessing a group of Pods. They enable load balancing and automatic service discovery for applications.
+
+4. **ReplicaSets:** ReplicaSets are the previous generation of Deployments. They work similarly but lack some advanced features like rolling updates.
+
+### Concept of Labels and Selectors:
+
+Labels are key-value pairs attached to Kubernetes objects like Pods, Deployments, and Services. They act as metadata and help identify, categorize, and organize objects. Labels have no intrinsic semantic meaning but are useful for filtering and selecting objects.
+
+Selectors are queries that you use to select Kubernetes objects based on their labels. They allow you to group related objects and perform actions on them collectively. For example, a Deployment might use a selector to identify which Pods it should manage and ensure the desired number of replicas are running.
+
+### Architecture
+
+![](./images/k8.png)
+
+---
+
+**Master Node**
+
+The Kubernetes Master (Master Node) receives input from a CLI (Command-Line Interface) or UI (User Interface) via an API. These are the commands you provide to Kubernetes.
+
+You define pods, replica sets, and services that you want Kubernetes to maintain. For example, which container image to use, which ports to expose, and how many pod replicas to run.
+
+**API Server**
+
+The API Server is the front-end of the control plane and the only component in the control plane that we interact with directly. Internal system components, as well as external user components, all communicate via the same API.
+
+**Key-Value Store (etcd)**
+
+The Key-Value Store, also called etcd, is a database Kubernetes uses to back-up all cluster data. It stores the entire configuration and state of the cluster. The Master node queries etcd to retrieve parameters for the state of the nodes, pods, and containers.
+
+**Controller**
+
+The role of the Controller is to obtain the desired state from the API Server. It checks the current state of the nodes it is tasked to control, and determines if there are any differences, and resolves them, if any.
+
+**Scheduler**
+
+A Scheduler watches for new requests coming from the API Server and assigns them to healthy nodes. It ranks the quality of the nodes and deploys pods to the best-suited node. If there are no suitable nodes, the pods are put in a pending state until such a node appears.
+
+---
+
+**Worker Node**
+
+Worker nodes listen to the API Server for new work assignments; they execute the work assignments and then report the results back to the Kubernetes Master node.
+
