@@ -406,3 +406,152 @@ nginx-svc    NodePort    10.109.170.244   <none>        80:30001/TCP     40m
 node-svc     NodePort    10.103.173.254   <none>        3000:30002/TCP   2m43s
 ```
 
+# Connecting app to db
+
+* Step 1: Create PVC for mongo
+
+```yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-db
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+```
+
+`kubectl create -f mongodb-pvc.yml`
+
+* Step 2: Create Mongo Deployment
+
+```yml
+
+
+
+
+
+
+
+
+
+
+
+
+apiVersion: apps/v1 # which API to use for deployment
+kind: Deployment # pod - service what kind of service you want to create
+# what would you like to call it - name the service/object
+metadata:
+  name: mongo # naming the deployment
+spec:
+  selector:
+    matchLabels:
+      app: mongo #look for this label to match with k8 service
+    # let's create a replica set of this with instances/pods
+  replicas: 1 # 3 pods
+    # template to use it's label for k8 service to launch in the browser
+  template:
+    metadata:
+      labels:
+        app: mongo # this label connects to the service or any other k8 components
+  # let's define the container spec
+    spec:
+      containers:
+        - name: mongo
+          image: majeranowski/tech241-mongodb:v1 # use the image that you built
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: storage
+              mountPath: /data/db
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: mongo-db
+
+```
+
+* Step 3: Create mongo service
+
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+spec:
+  selector:
+    app: mongo
+  ports:
+    - port: 27017
+      targetPort: 27017
+```
+
+* Step 4: Create node deployment
+
+```yml
+apiVersion: apps/v1 # which API to use for deployment
+kind: Deployment # pod - service what kind of service you want to create
+# what would you like to call it - name the service/object
+metadata:
+  name: node # naming the deployment
+spec:
+  selector:
+    matchLabels:
+      app: node #look for this label to match with k8 service
+    # let's create a replica set of this with instances/pods
+  replicas: 3 # 3 pods
+    # template to use it's label for k8 service to launch in the browser
+  template:
+    metadata:
+      labels:
+        app: node # this label connects to the service or any other k8 components
+  # let's define the container spec
+    spec:
+      containers:
+        - name: node
+          image: majeranowski/tech241-node-app:v1 # use the image that you built
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: mongodb://mongo:27017/posts
+          imagePullPolicy: Always
+# create a kubernetes nginx-service.yml to create a k8 servicekube
+```
+
+* Step 5: Create node service
+
+```yml
+---
+# select the type of API version and type of service
+apiVersion: v1
+kind: Service
+#Metadata for name
+metadata:
+  name: node-svc
+  namespace: default  # sre
+# Specification to include ports Selector to connect to the deployment
+spec:
+  ports:
+  - nodePort: 30002 # range is 30000 - 32768
+    port: 3000
+    targetPort: 3000
+
+# Let's define the selector and label to connect to nginx deployment
+  selector:
+    app: node
+
+  # Creating NodePort of deployment
+  type: NodePort # alse use LoadBalancer - for local use ClasterIP
+```
+
+* Step 7:
+
+Create mongo and node deployment, service
+
+`kubectl create -f ...`
+
+
+
