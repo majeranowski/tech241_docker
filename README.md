@@ -337,3 +337,72 @@ node-deployment    3/3     3            3           3m15s
 
 ```
 
+# Creting nginx and node service to run deployments in the browser
+
+NGINX Service:
+
+```yml
+---
+# select the type of API version and type of service
+apiVersion: v1
+kind: Service
+#Metadata for name
+metadata:
+  name: nginx-svc
+  namespace: default  # sre
+# Specification to include ports Selector to connect to the deployment
+spec:
+  ports:
+  - nodePort: 30001 # range is 30000 - 32768
+    port: 80
+    targetPort: 80
+
+# Let's define the selector and label to connect to nginx deployment
+  selector:
+    app: nginx
+
+  # Creating NodePort of deployment
+  type: NodePort # alse use LoadBalancer - for local use ClasterIP
+```
+
+NODE Service:
+
+```yml
+---
+# select the type of API version and type of service
+apiVersion: v1
+kind: Service
+#Metadata for name
+metadata:
+  name: node-svc
+  namespace: default  # sre
+# Specification to include ports Selector to connect to the deployment
+spec:
+  ports:
+  - nodePort: 30002 # range is 30000 - 32768
+    port: 3000
+    targetPort: 3000
+
+# Let's define the selector and label to connect to nginx deployment
+  selector:
+    app: node
+
+  # Creating NodePort of deployment
+  type: NodePort # alse use LoadBalancer - for local use ClasterIP
+```
+
+After writing a yml file we need to create services:
+
+```bash
+kubectl create -f nginx-service.yml
+kubectl create -f node-service.yml
+```
+
+```bash
+$ kubectl get svc
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP          2d22h
+nginx-svc    NodePort    10.109.170.244   <none>        80:30001/TCP     40m
+node-svc     NodePort    10.103.173.254   <none>        3000:30002/TCP   2m43s
+```
+
