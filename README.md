@@ -553,5 +553,10 @@ Create mongo and node deployment, service
 
 `kubectl create -f ...`
 
+### To seed database
+
+```bash
+kubectl exec pod-name  env node seeds/seed.js
+```
 
 
