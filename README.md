@@ -697,4 +697,88 @@ node-pv    Bound    node-pv                                    1Gi        RWO   
 
 ```
 
+# Multiple object creation:
 
+To combine all the object creation yaml files into one all you need to add is **---**
+
+`---`
+
+EXAMPLE FOR MONGO:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-multiple-db
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mongo-multiple-hpa
+  namespace: default
+spec:
+  maxReplicas: 9
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: mongo-multiple
+  targetCPUUtilizationPercentage: 50
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-multiple
+spec:
+  selector:
+    matchLabels:
+      app: mongo-multiple
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo-multiple
+    spec:
+      containers:
+        - name: mongo-multiple
+          image: majeranowski/tech241-mongodb:v1
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: storage-multiple
+              mountPath: /data/db
+      volumes:
+        - name: storage-multiple
+          persistentVolumeClaim:
+            claimName: mongo-multiple-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-multiple
+spec:
+  selector:
+    app: mongo-multiple
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+```
+
+```bash
+$ kubectl create -f mongo-multiple-object.yml
+
+persistentvolumeclaim/mongo-multiple-db created
+horizontalpodautoscaler.autoscaling/mongo-multiple-hpa created
+deployment.apps/mongo-multiple created
+service/mongo-multiple created
+
+```

@@ -1,15 +1,4 @@
-
-
-
-
-
-
-
-
-
-
-
-
+---
 apiVersion: apps/v1 # which API to use for deployment
 kind: Deployment # pod - service what kind of service you want to create
 # what would you like to call it - name the service/object
