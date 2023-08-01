@@ -28,11 +28,18 @@ spec:
         app: node # this label connects to the service or any other k8 components
   # let's define the container spec
     spec:
+      volumes:
+        - name: node-pv
+          persistentVolumeClaim:
+            claimName: node-pvc
       containers:
         - name: node
           image: majeranowski/tech241-node-app:v1 # use the image that you built
           ports:
             - containerPort: 3000
+          volumeMounts:
+            - name: node-pv
+              mountPath: /tmp/data
           env:
             - name: DB_HOST
               value: mongodb://mongo:27017/posts

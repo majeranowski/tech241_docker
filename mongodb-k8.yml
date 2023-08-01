@@ -41,4 +41,3 @@ spec:
           persistentVolumeClaim:
             claimName: mongo-db
 
-# create a kubernetes nginx-service.yml to create a k8 servicekube

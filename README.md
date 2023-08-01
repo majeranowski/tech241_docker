@@ -558,5 +558,143 @@ Create mongo and node deployment, service
 ```bash
 kubectl exec pod-name  env node seeds/seed.js
 ```
+# Editing deployments, horizontal pod Autoscaller and Persistent Volume
+
+`kubectl edit deployment <name  of deployment>` - edit and manage deployments
+
+## Autoscalling:
+
+```yml
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler #(hpa)
+
+metadata:
+  name: node-hpa
+  namespace: default
+  
+spec:
+  maxReplicas: 9 #(max nuber of instances/pods)
+  minReplicas: 3 #(min nuber of instances/pods)
+  scaleTargetRef: # Targets the node deployment
+    apiVersion: apps/v1
+    kind: Deployment
+    name: node # name of the deployment you want to edit with hpa
+  targetCPUUtilizationPercentage: 50  # 50% of CPU use
+```
+
+## PV and PVC
+
+![](./images/pvc.png)
+
+
+In Kubernetes, a Persistent Volume (PV) is like a storage box that you can use to keep your data safe. It's a separate entity that exists independently of your applications.
+
+When you need some storage space for your application, you can request a "key" to open one of these storage boxes. This "key" is called a Persistent Volume Claim (PVC).
+
+The great thing about these storage boxes is that they come in different types and sizes. Some can be opened by one application at a time (like your private locker), while others can be shared by multiple applications (like a shared storage room).
+
+And here's the magic part: You don't always need to find an empty storage box yourself. Kubernetes can help you with that! It can automatically find or create the right storage box for you based on your needs. This is called "Dynamic Provisioning."
+
+So, PVs and PVCs in Kubernetes work together to provide a way for your applications to store data in a stable and scalable manner, without worrying about where the actual storage comes from. It's like having a personal storage service for your apps, keeping their data safe and easily accessible.
+
+**Node deployment example:**
+
+* Step 1: Create PV
+
+```yml 
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  finalizers:
+  - kubernetes.io/pv-protection
+  labels:
+    type: local
+  name: node-pv 
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 1Gi
+  hostPath:
+    path: /tmp/data
+    type: ""
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+  storageClassName: manual
+```
+
+`kubectl create -f <name of the pv file>`
+
+* Step 2: Create PVC
+
+```yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node-pv
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 512Mi
+  storageClassName: manual
+```
+
+`kubectl create -f <name of the pvc file>`
+
+* Step 3: Update node deployment:
+
+```yml
+
+
+apiVersion: apps/v1 # which API to use for deployment
+kind: Deployment # pod - service what kind of service you want to create
+# what would you like to call it - name the service/object
+metadata:
+  name: node # naming the deployment
+spec:
+  selector:
+    matchLabels:
+      app: node #look for this label to match with k8 service
+    # let's create a replica set of this with instances/pods
+  replicas: 3 # 3 pods
+    # template to use it's label for k8 service to launch in the browser
+  template:
+    metadata:
+      labels:
+        app: node # this label connects to the service or any other k8 components
+  # let's define the container spec
+    spec:
+      volumes:
+        - name: node-pv   #Part to connect to PVC
+          persistentVolumeClaim:
+            claimName: node-pvc
+      containers:
+        - name: node
+          image: majeranowski/tech241-node-app:v1 # use the image that you built
+          ports:
+            - containerPort: 3000
+          volumeMounts:  # Part to connect to PVC
+            - name: node-pv
+              mountPath: /tmp/data
+          env:
+            - name: DB_HOST
+              value: mongodb://mongo:27017/posts
+          imagePullPolicy: Always
+# create a kubernetes nginx-service.yml to create a k8 servicekube
+```
+
+`kubectl apply -f (name od the deployment file)`
+
+* Step 4: Check if it works
+
+```yml
+$ kubectl get pvc
+NAME       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+mongo-db   Bound    pvc-386b268f-7fa6-4b39-9eca-9672b4055bfe   256Mi      RWO            hostpath       23h
+node-pv    Bound    node-pv                                    1Gi        RWO            manual         6s
+
+```
 
 

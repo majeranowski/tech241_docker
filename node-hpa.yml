@@ -1,0 +1,15 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler #(hpa)
+
+metadata:
+  name: node-hpa
+  namespace: default
+  
+spec:
+  maxReplicas: 9 #(max nuber of instances/pods)
+  minReplicas: 3 #(min nuber of instances/pods)
+  scaleTargetRef: # Targets the node deployment
+    apiVersion: apps/v1
+    kind: Deployment
+    name: node
+  targetCPUUtilizationPercentage: 50  # 50% of CPU use
